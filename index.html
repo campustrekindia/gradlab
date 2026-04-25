@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GradLab — Your Bridge to What's Next</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red: #C0021F;
+    --red-deep: #8B0015;
+    --red-light: #E8003A;
+    --red-glow: rgba(192,2,31,0.35);
+    --red-glass: rgba(192,2,31,0.12);
+    --white: #FFFFFF;
+    --glass-bg: rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.18);
+    --glass-border-red: rgba(192,2,31,0.3);
+    --text-light: rgba(255,255,255,0.75);
+    --text-muted: rgba(255,255,255,0.45);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: #0a0002;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  #bg-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    pointer-events: none; opacity: 0.6;
+  }
+
+  main { position: relative; z-index: 2; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 5%;
+    background: rgba(10,0,2,0.55);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: background .3s;
+  }
+  .nav-logo {
+    display: flex; align-items: center;
+  }
+  .nav-logo img {
+    height: 44px; width: auto;
+    object-fit: contain; display: block;
+  }
+  .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+  .nav-links a {
+    color: var(--text-light); text-decoration: none;
+    font-size: .85rem; font-weight: 500; letter-spacing: .02em;
+    text-transform: uppercase; transition: color .25s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 1px; background: var(--red-light);
+    transition: width .3s;
+  }
+  .nav-links a:hover { color: #fff; }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-cta {
+    padding: .55rem 1.4rem;
+    background: var(--red); color: #fff;
+    border: none; border-radius: 50px;
+    font-size: .82rem; font-weight: 600;
+    letter-spacing: .02em; text-transform: uppercase;
+    cursor: pointer; text-decoration: none;
+    transition: background .25s, box-shadow .25s, transform .2s;
+  }
+  .nav-cta:hover {
+    background: var(--red-light);
+    box-shadow: 0 0 28px var(--red-glow);
+    transform: translateY(-1px);
+  }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 6rem 6% 4rem;
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--red-light); font-weight: 600; margin-bottom: 0.8rem;
+    opacity: 0; animation: fadeUp .8s .2s forwards;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.8rem, 9vw, 8.5rem);
+    font-weight: 400; line-height: 1.0; letter-spacing: 0.01em;
+    margin-bottom: 0.7rem;
+    opacity: 0; animation: fadeUp .9s .4s forwards;
+  }
+  .hero-title strong {
+    font-weight: 700; color: var(--red-light); display: block;
+  }
+  .hero-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1rem, 2.2vw, 1.3rem);
+    font-style: normal; color: var(--text-light);
+    margin-bottom: 1.8rem; letter-spacing: 0.01em;
+    opacity: 0; animation: fadeUp .9s .6s forwards;
+  }
+  .hero-pills {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp .9s .8s forwards;
+  }
+  .hero-pill {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .7rem 1.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 50px; backdrop-filter: blur(12px);
+    font-size: .9rem; color: var(--text-light);
+    transition: background .3s, border-color .3s, transform .25s;
+  }
+  .hero-pill:hover {
+    background: var(--red-glass);
+    border-color: var(--glass-border-red);
+    transform: translateY(-3px); color: #fff;
+  }
+  .hero-cta-group {
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    opacity: 0; animation: fadeUp .9s 1s forwards;
+  }
+  .btn-primary {
+    padding: .85rem 2.2rem; background: var(--red);
+    color: #fff; border: none; border-radius: 50px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: .9rem; font-weight: 600; letter-spacing: .02em;
+    text-transform: uppercase; cursor: pointer; text-decoration: none;
+    transition: background .25s, box-shadow .3s, transform .2s;
+    display: inline-block;
+  }
+  .btn-primary:hover {
+    background: var(--red-light);
+    box-shadow: 0 8px 40px var(--red-glow);
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    padding: .85rem 2.2rem; background: transparent;
+    color: #fff; border: 1px solid var(--glass-border);
+    border-radius: 50px; font-family: 'Montserrat', sans-serif;
+    font-size: .9rem; font-weight: 500; letter-spacing: .02em;
+    text-transform: uppercase; cursor: pointer; text-decoration: none;
+    transition: background .25s, border-color .3s, transform .2s;
+    display: inline-block; backdrop-filter: blur(10px);
+  }
+  .btn-ghost:hover {
+    background: var(--glass-bg);
+    border-color: rgba(255,255,255,0.4);
+    transform: translateY(-2px);
+  }
+  .scroll-indicator {
+    position: absolute; bottom: 2.5rem; left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: .4rem;
+    opacity: .5; animation: bounce 2.2s infinite;
+  }
+  .scroll-indicator span {
+    font-size: .7rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .scroll-arrow {
+    width: 20px; height: 20px;
+    border-right: 1.5px solid var(--text-muted);
+    border-bottom: 1.5px solid var(--text-muted);
+    transform: rotate(45deg);
+  }
+
+  /* SECTIONS */
+  section { padding: 7rem 6%; }
+  .section-tag {
+    font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--red-light); font-weight: 600; margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+    font-weight: 400; line-height: 0.9; letter-spacing: 0.01em; margin-bottom: 1.2rem;
+  }
+  .section-desc {
+    font-size: 1.05rem; color: var(--text-light);
+    max-width: 560px; line-height: 1.75;
+  }
+
+  /* PATHS OVERVIEW */
+  #paths { padding-top: 5rem; padding-bottom: 5rem; }
+  .paths-header { text-align: center; margin-bottom: 4rem; }
+  .paths-header .section-desc { margin: 0 auto; }
+  .paths-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap: 1.5rem;
+  }
+  .path-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 2.5rem 2rem;
+    backdrop-filter: blur(18px);
+    position: relative; overflow: hidden;
+    transition: transform .3s, border-color .3s, box-shadow .3s;
+  }
+  .path-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--red), var(--red-light), transparent);
+    opacity: 0; transition: opacity .3s;
+  }
+  .path-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--glass-border-red);
+    box-shadow: 0 20px 60px rgba(192,2,31,0.2);
+  }
+  .path-card:hover::before { opacity: 1; }
+  .path-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem; font-weight: 400; line-height: 1;
+    margin-bottom: .5rem;
+    background: linear-gradient(135deg, var(--red) 0%, rgba(192,2,31,0.2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .path-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .path-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem; font-weight: 400; letter-spacing: 0.01em; margin-bottom: .7rem;
+  }
+  .path-desc {
+    font-size: .88rem; color: var(--text-light);
+    line-height: 1.7; margin-bottom: 1.5rem;
+  }
+  .path-tag {
+    display: inline-block; padding: .3rem .9rem;
+    background: var(--red-glass);
+    border: 1px solid var(--glass-border-red);
+    border-radius: 50px; font-size: .72rem; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--red-light); font-weight: 600;
+  }
+
+  /* STATS */
+  #stats {
+    padding: 5rem 6%;
+    background: linear-gradient(135deg, rgba(192,2,31,0.15) 0%, rgba(192,2,31,0.04) 100%);
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+    gap: 2rem; text-align: center;
+  }
+  .stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 400; color: var(--red-light); line-height: 1;
+  }
+  .stat-label {
+    font-size: .8rem; color: var(--text-light);
+    letter-spacing: .04em; text-transform: uppercase; margin-top: .4rem;
+  }
+
+  /* DETAIL SECTIONS */
+  .path-detail {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5rem; align-items: center;
+  }
+  .path-detail.reverse { direction: rtl; }
+  .path-detail.reverse > * { direction: ltr; }
+  .detail-path-label {
+    font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--red-light); font-weight: 600; margin-bottom: 1rem;
+  }
+  .detail-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+    font-weight: 400; line-height: 0.88; letter-spacing: 0.01em; margin-bottom: .7rem;
+  }
+  .detail-tagline {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal; font-size: 1rem; font-weight: 400;
+    color: var(--text-light); margin-bottom: 2.5rem; line-height: 1.7;
+    letter-spacing: 0.01em;
+  }
+  .services-list { display: flex; flex-direction: column; gap: .9rem; }
+  .service-item {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px; backdrop-filter: blur(12px);
+    transition: background .25s, border-color .25s, transform .25s;
+  }
+  .service-item:hover {
+    background: rgba(192,2,31,0.08);
+    border-color: var(--glass-border-red);
+    transform: translateX(6px);
+  }
+  .service-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem; font-weight: 400; color: var(--red-light);
+    line-height: 1; min-width: 24px; margin-top: .05rem;
+  }
+  .service-text h4 { font-size: .92rem; font-weight: 600; margin-bottom: .2rem; }
+  .service-text p { font-size: .82rem; color: var(--text-light); line-height: 1.6; }
+
+  /* VISUAL PANEL */
+  .detail-visual {
+    position: relative; min-height: 460px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .visual-card {
+    width: 100%; max-width: 380px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; backdrop-filter: blur(24px);
+    padding: 3rem 2.5rem; text-align: center;
+    position: relative; z-index: 2;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.4),0 0 0 1px var(--glass-border);
+  }
+  .visual-big-icon { font-size: 4rem; margin-bottom: 1rem; }
+  .visual-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem; font-weight: 400; letter-spacing: 0.01em; margin-bottom: .5rem;
+  }
+  .visual-sub { font-size: .85rem; color: var(--text-light); line-height: 1.6; }
+  .visual-orb {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, var(--red-glow) 0%, transparent 70%);
+    filter: blur(30px); pointer-events: none;
+  }
+  .orb-1 { width: 300px; height: 300px; top: -60px; right: -60px; opacity: .6; }
+  .orb-2 { width: 200px; height: 200px; bottom: -40px; left: -40px; opacity: .4; }
+
+  /* WHY */
+  .why-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+    gap: 1.5rem; margin-top: 4rem;
+  }
+  .why-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px; padding: 2rem 1.8rem;
+    backdrop-filter: blur(16px);
+    transition: transform .3s, border-color .3s, box-shadow .3s;
+  }
+  .why-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--glass-border-red);
+    box-shadow: 0 12px 50px rgba(192,2,31,0.15);
+  }
+  .why-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--red-glass);
+    border: 1px solid var(--glass-border-red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 1.2rem;
+  }
+  .why-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem; font-weight: 400; letter-spacing: 0.01em; margin-bottom: .6rem;
+  }
+  .why-card p { font-size: .85rem; color: var(--text-light); line-height: 1.7; }
+
+  /* FORM */
+  #connect { padding: 8rem 6%; position: relative; }
+  .form-wrapper { max-width: 720px; margin: 0 auto; }
+  .form-header { text-align: center; margin-bottom: 3.5rem; }
+  .form-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px; backdrop-filter: blur(24px);
+    padding: 3rem; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+    position: relative; overflow: hidden;
+  }
+  .form-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--red-deep), var(--red-light), var(--red-deep));
+  }
+  .form-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1.2rem; margin-bottom: 1.2rem;
+  }
+  .form-group { display: flex; flex-direction: column; gap: .4rem; }
+  .form-group.full { grid-column: 1 / -1; }
+  label {
+    font-size: .77rem; letter-spacing: .04em; text-transform: uppercase;
+    font-weight: 600; color: var(--text-light);
+  }
+  input, select, textarea {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px; padding: .85rem 1.1rem;
+    color: #fff; font-family: 'Montserrat', sans-serif;
+    font-size: .92rem; outline: none; width: 100%;
+    transition: border-color .25s, background .25s, box-shadow .25s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--red-light);
+    background: rgba(192,2,31,0.06);
+    box-shadow: 0 0 0 3px rgba(192,2,31,0.15);
+  }
+  select { cursor: pointer; }
+  select option { background: #1a0008; color: #fff; }
+  textarea { resize: vertical; min-height: 110px; }
+
+  /* PATH SELECTOR */
+  .path-selector {
+    display: grid; grid-template-columns: repeat(3,1fr);
+    gap: .8rem; margin-bottom: 1.2rem;
+  }
+  .path-choice { display: none; }
+  .path-choice-label {
+    display: flex; flex-direction: column; align-items: center;
+    gap: .4rem; padding: 1rem .8rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px; cursor: pointer;
+    transition: background .25s, border-color .25s, transform .2s;
+    font-size: .8rem; text-align: center;
+    color: var(--text-light); font-weight: 500;
+  }
+  .path-choice-label span { font-size: 1.4rem; }
+  .path-choice:checked + .path-choice-label {
+    background: var(--red-glass);
+    border-color: var(--red-light); color: #fff;
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(192,2,31,0.25);
+  }
+  .submit-btn {
+    width: 100%; padding: 1rem;
+    background: var(--red); color: #fff;
+    border: none; border-radius: 12px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem; font-weight: 700; letter-spacing: .02em;
+    text-transform: uppercase; cursor: pointer; margin-top: 1rem;
+    transition: background .25s, box-shadow .3s, transform .2s;
+  }
+  .submit-btn:hover {
+    background: var(--red-light);
+    box-shadow: 0 8px 40px var(--red-glow);
+    transform: translateY(-2px);
+  }
+  .form-note {
+    text-align: center; font-size: .78rem;
+    color: var(--text-muted); margin-top: 1rem;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 3rem 6%;
+    border-top: 1px solid var(--glass-border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1.5rem;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem; font-weight: 400; letter-spacing: 0.03em; color: #fff;
+  }
+  .footer-logo span { color: var(--red-light); }
+  .footer-tagline {
+    font-size: .78rem; color: var(--text-muted); letter-spacing: 0.01em;
+    font-family: 'Montserrat', sans-serif; font-style: normal;
+  }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-links a {
+    font-size: .78rem; color: var(--text-muted);
+    text-decoration: none; letter-spacing: .03em;
+    text-transform: uppercase; transition: color .2s;
+  }
+  .footer-links a:hover { color: var(--red-light); }
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-border), transparent);
+    margin: 0 6%;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(8px); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(36px);
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* RESPONSIVE */
+  @media(max-width: 768px) {
+    .path-detail { grid-template-columns: 1fr; gap: 3rem; }
+    .path-detail.reverse { direction: ltr; }
+    .detail-visual { min-height: 280px; order: -1; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-card { padding: 2rem 1.5rem; }
+    nav { padding: 1rem 4%; }
+    .nav-links { display: none; }
+    footer { flex-direction: column; text-align: center; }
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0002; }
+  ::-webkit-scrollbar-thumb { background: var(--red-deep); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--red); }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><img src="GL-Logo.png" alt="GradLab — Your Bridge to What's Next"/></div>
+  <ul class="nav-links">
+    <li><a href="#paths">Paths</a></li>
+    <li><a href="#placements">Placements</a></li>
+    <li><a href="#abroad">Abroad</a></li>
+    <li><a href="#business">Business</a></li>
+    <li><a href="#why">Why Us</a></li>
+  </ul>
+  <a href="#connect" class="nav-cta">Find Your Path</a>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-eyebrow">Empowering Every Graduate</p>
+  <h1 class="hero-title">
+    Your Bridge to<br/>
+    <strong>What's Next</strong>
+  </h1>
+  <p class="hero-subtitle">One platform. Three futures. Unlimited potential.</p>
+  <div class="hero-pills">
+    <div class="hero-pill"><span>🎓</span> Placements</div>
+    <div class="hero-pill"><span>✈️</span> Abroad Education</div>
+    <div class="hero-pill"><span>🚀</span> Business Support</div>
+  </div>
+  <div class="hero-cta-group">
+    <a href="#connect" class="btn-primary">Discover Your Path</a>
+    <a href="#paths" class="btn-ghost">Explore What We Do</a>
+  </div>
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- 3 PATHS -->
+<section id="paths">
+  <div class="paths-header reveal">
+    <p class="section-tag">The Three Paths</p>
+    <h2 class="section-title">Every student in India faces<br/>the same fork in the road</h2>
+    <p class="section-desc">GradLab walks beside you on all three — from campus to career, classroom to country, idea to operation.</p>
+  </div>
+  <div class="paths-grid">
+    <div class="path-card reveal reveal-delay-1">
+      <div class="path-number">01</div>
+      <div class="path-icon">🎓</div>
+      <div class="path-name">Placements</div>
+      <p class="path-desc">Bridging the gap between campus and career. Turning students into job-ready professionals.</p>
+      <span class="path-tag">5 Services</span>
+    </div>
+    <div class="path-card reveal reveal-delay-2">
+      <div class="path-number">02</div>
+      <div class="path-icon">✈️</div>
+      <div class="path-name">Abroad Education</div>
+      <p class="path-desc">From application to arrival — we handle it all. End-to-end support for students dreaming of global education.</p>
+      <span class="path-tag">5 Services</span>
+    </div>
+    <div class="path-card reveal reveal-delay-3">
+      <div class="path-number">03</div>
+      <div class="path-icon">🚀</div>
+      <div class="path-name">Business Support</div>
+      <p class="path-desc">Laying the legal and digital foundation for student ventures. From idea to full operation.</p>
+      <span class="path-tag">5 Services</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stats-grid">
+    <div class="stat-item reveal">
+      <div class="stat-number">3</div>
+      <div class="stat-label">Career Paths Covered</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <div class="stat-number">15+</div>
+      <div class="stat-label">Expert Services</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <div class="stat-number">1</div>
+      <div class="stat-label">Platform for All</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+      <div class="stat-number">∞</div>
+      <div class="stat-label">Graduate Potential</div>
+    </div>
+  </div>
+</div>
+
+<!-- PATH 01: PLACEMENTS -->
+<section id="placements">
+  <div class="path-detail">
+    <div class="detail-content">
+      <p class="detail-path-label reveal">Path 01 — Placements</p>
+      <h2 class="detail-title reveal">Placement<br/>Support</h2>
+      <p class="detail-tagline reveal">Bridging the gap between campus and career — helping colleges turn students into job-ready professionals.</p>
+      <div class="services-list">
+        <div class="service-item reveal reveal-delay-1">
+          <div class="service-num">1</div>
+          <div class="service-text">
+            <h4>Aptitude & Logical Reasoning</h4>
+            <p>Structured training to sharpen quantitative and analytical thinking.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-2">
+          <div class="service-num">2</div>
+          <div class="service-text">
+            <h4>Communication Skills</h4>
+            <p>Verbal, written, and presentation skills for the corporate world.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-3">
+          <div class="service-num">3</div>
+          <div class="service-text">
+            <h4>People & Soft Skills</h4>
+            <p>Teamwork, emotional intelligence, and workplace etiquette workshops.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-4">
+          <div class="service-num">4</div>
+          <div class="service-text">
+            <h4>Interview Preparation</h4>
+            <p>Mock interviews, HR round training, and real-world scenario practice.</p>
+          </div>
+        </div>
+        <div class="service-item reveal">
+          <div class="service-num">5</div>
+          <div class="service-text">
+            <h4>Campus Upskilling Programs</h4>
+            <p>Custom modules designed for colleges to upskill final-year students at scale.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-visual reveal">
+      <div class="visual-orb orb-1"></div>
+      <div class="visual-orb orb-2"></div>
+      <div class="visual-card">
+        <div class="visual-big-icon">🎓</div>
+        <div class="visual-title">Placement<br/>Ready</div>
+        <p class="visual-sub">From campus classrooms to corporate boardrooms — every step prepared.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PATH 02: ABROAD -->
+<section id="abroad">
+  <div class="path-detail reverse">
+    <div class="detail-content">
+      <p class="detail-path-label reveal">Path 02 — Abroad Education</p>
+      <h2 class="detail-title reveal">Abroad<br/>Education</h2>
+      <p class="detail-tagline reveal">From application to arrival — we handle it all. End-to-end support for students dreaming of global education.</p>
+      <div class="services-list">
+        <div class="service-item reveal reveal-delay-1">
+          <div class="service-num">1</div>
+          <div class="service-text">
+            <h4>Abroad Counselling</h4>
+            <p>Personalized guidance to help students choose the right country and program.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-2">
+          <div class="service-num">2</div>
+          <div class="service-text">
+            <h4>Competitive Exam Support</h4>
+            <p>Coaching for GRE, GMAT, IELTS, TOEFL and other international entrance exams.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-3">
+          <div class="service-num">3</div>
+          <div class="service-text">
+            <h4>University Shortlisting</h4>
+            <p>Data-driven selection of best-fit universities based on profile and goals.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-4">
+          <div class="service-num">4</div>
+          <div class="service-text">
+            <h4>Application Processing</h4>
+            <p>End-to-end management of SOP, LOR, applications and deadlines.</p>
+          </div>
+        </div>
+        <div class="service-item reveal">
+          <div class="service-num">5</div>
+          <div class="service-text">
+            <h4>Post-Arrival & Visa Support</h4>
+            <p>Accommodation assistance, internal visa transfers, and pre-departure orientation.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-visual reveal">
+      <div class="visual-orb orb-1"></div>
+      <div class="visual-orb orb-2"></div>
+      <div class="visual-card">
+        <div class="visual-big-icon">✈️</div>
+        <div class="visual-title">Global<br/>Dreams</div>
+        <p class="visual-sub">Your dream of studying abroad — made real, step by step, country by country.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PATH 03: BUSINESS -->
+<section id="business">
+  <div class="path-detail">
+    <div class="detail-content">
+      <p class="detail-path-label reveal">Path 03 — Business</p>
+      <h2 class="detail-title reveal">Business<br/>Support</h2>
+      <p class="detail-tagline reveal">Laying the legal and digital foundation for student ventures — supporting entrepreneurs from idea to operation.</p>
+      <div class="services-list">
+        <div class="service-item reveal reveal-delay-1">
+          <div class="service-num">1</div>
+          <div class="service-text">
+            <h4>Company Registration</h4>
+            <p>Help students legally register their venture with local government bodies.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-2">
+          <div class="service-num">2</div>
+          <div class="service-text">
+            <h4>Legal Compliance Guidance</h4>
+            <p>Ensuring businesses meet statutory requirements, GST, and regulatory norms.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-3">
+          <div class="service-num">3</div>
+          <div class="service-text">
+            <h4>Marketing Setup Support</h4>
+            <p>Branding, social media strategy, and go-to-market guidance for early-stage startups.</p>
+          </div>
+        </div>
+        <div class="service-item reveal reveal-delay-4">
+          <div class="service-num">4</div>
+          <div class="service-text">
+            <h4>Website Development</h4>
+            <p>Building professional web presence for student-run businesses.</p>
+          </div>
+        </div>
+        <div class="service-item reveal">
+          <div class="service-num">5</div>
+          <div class="service-text">
+            <h4>ERP & Systems Setup</h4>
+            <p>Implementing lightweight ERP solutions for operations, billing, and management.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-visual reveal">
+      <div class="visual-orb orb-1"></div>
+      <div class="visual-orb orb-2"></div>
+      <div class="visual-card">
+        <div class="visual-big-icon">🚀</div>
+        <div class="visual-title">Launch<br/>Ready</div>
+        <p class="visual-sub">From spark to structure — we set the foundation so you can focus on growth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY GRADLAB -->
+<section id="why">
+  <div style="text-align:center; margin-bottom:4rem;">
+    <p class="section-tag reveal">Why GradLab?</p>
+    <h2 class="section-title reveal">One Roof. Three Futures.<br/>Unlimited Potential.</h2>
+    <p class="section-desc reveal" style="margin:0 auto;">Students don't need to hop between agencies — GradLab covers all three career paths under one trusted brand.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card reveal reveal-delay-1">
+      <div class="why-icon">🏛️</div>
+      <h3>All-in-One Platform</h3>
+      <p>Students don't need to hop between agencies — GradLab covers all three career paths under one brand.</p>
+    </div>
+    <div class="why-card reveal reveal-delay-2">
+      <div class="why-icon">🏫</div>
+      <h3>College-First Approach</h3>
+      <p>We work directly with institutions to build placement ecosystems and counsel students collectively.</p>
+    </div>
+    <div class="why-card reveal reveal-delay-3">
+      <div class="why-icon">🌐</div>
+      <h3>Global + Local Expertise</h3>
+      <p>Deep knowledge of Indian regulations and international education systems makes us a trusted guide.</p>
+    </div>
+    <div class="why-card reveal reveal-delay-4">
+      <div class="why-icon">🤝</div>
+      <h3>End-to-End Commitment</h3>
+      <p>We don't just open the door — we walk students through every step of their journey.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CAREER CLARITY FORM -->
+<section id="connect">
+  <div class="form-wrapper">
+    <div class="form-header reveal">
+      <p class="section-tag">Find Your Path</p>
+      <h2 class="section-title">Confused About<br/>Your Career?</h2>
+      <p class="section-desc" style="margin:0 auto;">Whether it's placements, studying abroad, or starting your own business — tell us where you are, and we'll help you figure out where to go.</p>
+    </div>
+    <div class="form-card reveal">
+      <form action="https://formspree.io/f/mykldblo" method="POST">
+
+        <div style="margin-bottom:1.5rem;">
+          <label style="display:block; margin-bottom:.8rem;">I'm interested in…</label>
+          <div class="path-selector">
+            <input type="radio" name="interest_path" id="path-placement" value="Placements" class="path-choice"/>
+            <label for="path-placement" class="path-choice-label">
+              <span>🎓</span>Placements
+            </label>
+            <input type="radio" name="interest_path" id="path-abroad" value="Abroad Education" class="path-choice"/>
+            <label for="path-abroad" class="path-choice-label">
+              <span>✈️</span>Abroad
+            </label>
+            <input type="radio" name="interest_path" id="path-business" value="Business" class="path-choice"/>
+            <label for="path-business" class="path-choice-label">
+              <span>🚀</span>Business
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fname">First Name</label>
+            <input type="text" id="fname" name="first_name" placeholder="Aarav" required/>
+          </div>
+          <div class="form-group">
+            <label for="lname">Last Name</label>
+            <input type="text" id="lname" name="last_name" placeholder="Sharma" required/>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="aarav@email.com" required/>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210"/>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="grad-year">Graduation Year</label>
+            <select id="grad-year" name="graduation_year">
+              <option value="">Select Year</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026 (Current)</option>
+              <option value="2027">2027</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="degree">Degree / Field</label>
+            <input type="text" id="degree" name="degree" placeholder="B.Tech / MBA / B.Com…"/>
+          </div>
+        </div>
+
+        <div class="form-group full" style="margin-bottom:1.2rem;">
+          <label for="confusion">Tell us what's on your mind</label>
+          <textarea id="confusion" name="message" placeholder="Describe your confusion, goals, or what you're unsure about. We'll respond within 24 hours with a clear, personalized plan…" required></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">Clear My Path — Let's Talk →</button>
+        <p class="form-note">🔒 Your information is private and secure. We'll never share your details.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo"><img src="GL-Logo.png" alt="GradLab" style="height:36px;width:auto;object-fit:contain;display:block;"/></div>
+    <div class="footer-tagline" style="margin-top:.3rem;">Your Bridge to What's Next</div>
+  </div>
+  <div style="font-size:.82rem; color:var(--text-muted); text-align:center;">
+    Placements &nbsp;·&nbsp; Abroad Education &nbsp;·&nbsp; Business Support
+  </div>
+  <div class="footer-links">
+    <a href="#paths">Paths</a>
+    <a href="#why">Why Us</a>
+    <a href="#connect">Contact</a>
+  </div>
+</footer>
+
+</main>
+
+<script>
+// ANIMATED BACKGROUND CANVAS
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const orbs = Array.from({length: 6}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: 200 + Math.random() * 300,
+  vx: (Math.random() - .5) * .35,
+  vy: (Math.random() - .5) * .35,
+  opacity: .08 + Math.random() * .12
+}));
+
+const particles = Array.from({length: 55}, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  size: .5 + Math.random() * 1.5,
+  vx: (Math.random() - .5) * .4,
+  vy: (Math.random() - .5) * .4,
+  opacity: .12 + Math.random() * .35
+}));
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  orbs.forEach(o => {
+    o.x += o.vx; o.y += o.vy;
+    if (o.x < -o.r) o.x = canvas.width + o.r;
+    if (o.x > canvas.width + o.r) o.x = -o.r;
+    if (o.y < -o.r) o.y = canvas.height + o.r;
+    if (o.y > canvas.height + o.r) o.y = -o.r;
+    const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+    g.addColorStop(0, `rgba(192,2,31,${o.opacity})`);
+    g.addColorStop(1, 'rgba(192,2,31,0)');
+    ctx.beginPath();
+    ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+  });
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// SCROLL REVEAL
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => io.observe(el));
+
+// NAV SCROLL EFFECT
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      const nav = document.querySelector('nav');
+      nav.style.background = window.scrollY > 60
+        ? 'rgba(10,0,2,0.88)' : 'rgba(10,0,2,0.55)';
+      ticking = false;
+    });
+    ticking = true;
+  }
+});
+</script>
+</body>
+</html>
